@@ -32,6 +32,16 @@ def getNormalNormal(face):
     else:
         return(normnorm)
 
+# ehhh, no face combining. What
+#def get_combined_face(facebits):
+#    combined_vertices=set()
+#    for vertex in facebits:
+#        combined_vertices.add(vertex)
+#        combined_vertices.update(get_combined_face(vertmap.pop(vertex)))
+#    
+#    return(vertices.union(get_combined_face(facebits[1])))
+
+
 if __name__=='__main__':
     fl = open(sys.argv[1])
     print(sys.argv[1])
@@ -43,15 +53,28 @@ if __name__=='__main__':
     # planes in stl files are made up of many triangles. We only want to have joints at the corners, where they are needed.
     # To determine what faces can be combined, faces can be group'd by thier inclination. Not all faces with the same inclination will combine, but a lot will.
     face_normal_grouping=defaultdict(set)
+    vertmap=defaultdict([])
+    trimap=defaultdict([])
 
     for face in mesh.facets:
         face = tuple((tuple((round(ordo,rounding_percision) for ordo in vertex)) for vertex in face.vertices))
         normal = getNormalNormal(face)
         face_normal_grouping[normal].add(face)
+        vertmap+=face
+    print(vertmap)
+    
+    combined_face_normal_grouping=defaultdict([])
 
-    faces = []
-
-    for face_normal in face_normal_grouping:
-        from pprint import pprint
-        pprint(face_normal)
+    for source_face_normal in face_normal_grouping:
+        print("normal {}".format(source_face_normal))
+        for source_face in face_normal_grouping[source_face_normal]:
+            for combined_face_normal in combined_face_normal_grouping:
+                for combined_face in combined_face_normal_grouping[combined_face_normal]:
+                    if any([source_face_vert in combined_facefacecombined_face_normal_grouping[combined_face_normal] for source_face_vert in source_face]):
+                    (combined_face_normal_grouping[combined_face_normal].add(vert) for vert in source_face)
+                    break
+            faces+=[set(source_face)]
+                    
+    from pprint import pprint
+    pprint(faces)
 
