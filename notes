@@ -1,0 +1,38 @@
+
+# this algorithim is interesting, but bad.
+# algorithim of combining faces?
+it must iterate over the faces the first time to build a list/set of verts, but then it could iterate by faces,edges,verts, whatever.
+** there's a diagram to go with this, but it's not here.
+the first tri adds itself to a new face.
+
+the second tri not knowing it will become part of the first face adds itself to a new face.
+
+the third face knows that it has joints in common with the other faces, but no edges are removed, so it is added to it's own face
+
+the fourth face has an edge in common with 1, so it and 1 lose that edge becoming part of the same face
+
+5 has edges with 4 3 and 2 so it joins them all, losing all of it's edges
+
+6 is not connected, it is added to its own new face.
+
+
+
+# vertex lookup map algorithm
+The triangles are iterated over, adding the value of each vertex in the tri to the dictionary for the key of every other vertex in the tri. this creates a dict with verts as keys that link to every vert they are connected to.
+
+it's important to have the verts stored in such a way that a removed vert can be used to query the dict for all verts connected to itself and remove itself from thier references.
+
+
+with a single vector I could describe a line generally enoght to have all paralell lines in 3d space. any vectors with a similar vertex are part of a longer line. there will be no distinction to any triangles attached 
+
+### everything I said above was stupid.
+With a single vector, I have constructed a dictionary of faces with the same normal.
+If two triangles share two vertexes and a normal than they are part of the same face.
+
+As I go through the verts generating the joints I will query the vert to facelist dict, and then for each face it would run a function based on the normal to facelist dict (and face to normal dict if that's a thing). Based on an intersection of edges to other edges (represented as vectors?) it would either drop itself into a new joint face object, or form a new triangle from the two other triangles other verts, and maybe inform the other triangles that they are in fact one face.
+Then those joint face objects will be rotated in based on the average of vectors and then the smallest angle between vectors around the z axis. The verts get rounded to the nearest precision again, and added to a dict that keeps track of how many there are of each identical angle.
+Then they can be dumped as some kind of json for the openscad.
+
+
+~ I may want to get better on stilts than I am at walking, but if it's even possible, it's not something I'm going to try while running for the bus.
+
