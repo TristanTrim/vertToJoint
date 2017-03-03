@@ -8,7 +8,7 @@ rounding_percision=4
 drawAllEdges = False
 
 def getJoints(mesh):
-    print(mesh.__dict__)
+   #print(mesh.__dict__)
     return(mesh)
 
 
@@ -44,10 +44,22 @@ def get_combined_face(facebits):
     
     return(vertices.union(get_combined_face(facebits[1])))
 
+def triangle_sort(triA,triB):
+    for point in [0,1,2]:
+        if triA[point]>triB[point]:
+            return -1
+        elif triA[point]<triB[point]:
+            return 1
+    return 0
 
 if __name__=='__main__':
-    fl = open(sys.argv[1])
-    print(sys.argv[1])
+    try:
+        fl = open(sys.argv[1])
+        print(sys.argv[1])
+    except IndexError:
+        print("vertToJoint takes one argument: an stl file:")
+        print("python vertToJoint.py Cube.stl")
+        sys.exit()
     try:
         mesh = stl.read_binary_file(fl)
     except stl.binary.FormatError:
@@ -55,6 +67,8 @@ if __name__=='__main__':
 
     # planes in stl files are made up of many triangles. We only want to have joints at the corners, where they are needed.
     # To determine what faces can be combined, faces can be group'd by thier inclination. Not all faces with the same inclination will combine, but a lot will.
+
+    ## Because of the amount of referencing triangles, normals, verts, and edges from one another, it is nice to make lookup tables:
     normal2tris=defaultdict(set)
     tri2normal={}
     vert2tris=defaultdict(set)
@@ -75,11 +89,11 @@ if __name__=='__main__':
                 tri2edges[tri].add(
                     tuple(sorted((tri[ii-1],tri[ii])))
                         )
-    joints=[]
+    joints=defaultdict(lambda:0)
 
     for center_vert,tris in vert2tris.iteritems():
     #for center_vert,tris in (((1,1,1),vert2tris[(1,1,1)]),):
-        print("vert {}".format(center_vert))
+       #print("vert {}".format(center_vert))
         useable_tris=[]# usable_tris fills up with tris translated such that center vert = (0,0,0)
         if not drawAllEdges:
             useable_tris = []
@@ -122,7 +136,7 @@ if __name__=='__main__':
                 for ii in [0,1,2]:
                     average_vecter[ii]+=vert[ii]
         #average_vecter = normalifyVector(average_vecter)
-        print(average_vecter)
+       #print(average_vecter)
 
         average_angle_x = ((math.atan2(average_vecter[1],average_vecter[2]))%(2*math.pi))
         #rotate
@@ -139,10 +153,10 @@ if __name__=='__main__':
                           average_vecter[1]*math.cos(average_angle_x) + average_vecter[2]*-math.sin(average_angle_x),
                           average_vecter[1]*math.sin(average_angle_x) + average_vecter[2]*math.cos(average_angle_x),
                           )
-        print(average_vecter_y)
+       #print(average_vecter_y)
         average_angle_y = (0*math.pi/2)+((math.atan2(average_vecter_y[0],average_vecter_y[2]))%(2*math.pi))
         rotated_tris = tuple((
-                    tuple((
+                    tuple(sorted(
                         tuple((
                             round(vert[0]*math.cos(average_angle_y) + vert[2]*-math.sin(average_angle_y),2),
                             round(vert[1],2),
@@ -152,14 +166,22 @@ if __name__=='__main__':
                      for tri in x_rotated_tris ))
 
         from pprint import pprint
-        pprint("un rot tri")
-        pprint(average_vecter)
-        pprint(useable_tris)
-        pprint("x rot tri")
-        pprint(average_angle_x)
-        pprint(x_rotated_tris)
-        pprint("rot tri")
-        pprint(average_angle_y)
-        pprint(rotated_tris)
+       #pprint("un rot tri")
+       #pprint(average_vecter)
+       #pprint(useable_tris)
+       #pprint("x rot tri")
+       #pprint(average_angle_x)
+       #pprint(x_rotated_tris)
+       #pprint("rot tri")
+       #pprint(average_angle_y)
+       #pprint(rotated_tris)
 
+        ## I need sorted rotated tris for deduplication.
+        # this may cause the normals to be unpleasant, but I don't care.
+        sorted_rotated_tris = tuple(sorted(
+                    rotated_tris, cmp=triangle_sort))
+       #pprint(sorted_rotated_tris)
 
+        joints[sorted_rotated_tris]+=1
+
+    pprint(dict(joints))

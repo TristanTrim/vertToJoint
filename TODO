@@ -1,0 +1,10 @@
+
+
+I need to create a way of rotating joints on the z axis such that identical joints end up facing the same direction for deduplication purposes.
+I suspect that choosing the vertex most opposite to average when viewed from above would work.
+
+I need to refactor the sorting at the end to allow for this final transformation.
+
+I'd also like to clean the code for readability, if possible.
+
+
